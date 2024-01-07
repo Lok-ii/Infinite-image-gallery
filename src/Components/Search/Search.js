@@ -3,25 +3,26 @@ import axios from 'axios';
 import "./search.css";
 
 const Search = (props) => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [previousSeach, setPreviousSearch] = useState("");
   const [searchCount, setSeachCount] = useState(0);
+  const [searchPage, setSearchPage] = useState(1);
 
   const searchImages = (e) => {
     e.preventDefault();
     setSeachCount((prev) => prev + 1);
-    setPreviousSearch(searchTerm);
+    setPreviousSearch(props.searchTerm);
+    props.setSearchData([]);
   };
 
   const getSearch = (e) => {
-    setSearchTerm(e.target.value);
+    props.setSearchTerm(e.target.value);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://api.unsplash.com/search/photos?query=${searchTerm}`,
+          `https://api.unsplash.com/search/photos?query=${props.searchTerm}&per_page=20&page=${searchPage}`,
           {
             headers: {
               Authorization: `Client-ID JLG2my6265GxYGDQzPO9sPhpU5uQHQq-z4_Z6QLCuM4`,
@@ -30,7 +31,8 @@ const Search = (props) => {
         );
 
         console.log(response.data.results);
-        if (searchTerm !== previousSeach) {
+        if (props.searchTerm !== previousSeach && searchPage > 1) {
+          console.log(searchPage);
           props.setSearchData((prev) => {
             let newData = [...prev, ...response.data.results];
             return newData;
@@ -42,20 +44,33 @@ const Search = (props) => {
         console.error("le bhai tera error: ", error);
       }
     };
-    if (searchTerm !== "") {
+    if (props.searchTerm !== "") {
       fetchData();
     } else {
       props.setSearchData((prev) => prev);
     }
-  }, [searchCount]);
+  }, [searchCount, searchPage]);
+
+  useEffect(()=>{
+    window.addEventListener("scroll", ()=>{
+      if (
+        document.documentElement.scrollTop +
+          document.documentElement.clientHeight +
+          1 >=
+        document.documentElement.scrollHeight && props.searchTerm !== ""
+      ) {
+        setSearchPage((prev) => prev + 1);
+      }
+    })
+  }, []);
 
   return (
     <form className="searchForm" onSubmit={searchImages}>
       <input
         type="text"
-        placeholder="search kar na bhai"
+        placeholder="Search kar na bhai..."
         id="input-field"
-        value={searchTerm}
+        value={props.searchTerm}
         onChange={getSearch}
       />
       <button type="submit">Search</button>
