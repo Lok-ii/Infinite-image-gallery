@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from 'axios';
 import "./App.css";
 import Search from "./Components/Search/Search";
 import { ShimmerSimpleGallery } from "react-shimmer-effects";
